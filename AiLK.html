@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AiLK Search</title>
+  <style>
+    :root {
+      --bg: #fff;
+      --text: #202124;
+      --border: #dfe1e5;
+      --hover: #f1f1f1;
+      --shadow: rgba(32,33,36,0.28);
+      --link: #1a0dab;
+    }
+    body.dark {
+      --bg: #121212;
+      --text: #e0e0e0;
+      --border: #333;
+      --hover: #1f1f1f;
+      --shadow: rgba(0,0,0,0.6);
+      --link: #8ab4f8;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 80vh;
+    }
+    .logo {
+      font-size: 80px;
+      font-weight: bold;
+      letter-spacing: -2px;
+      user-select: none;
+    }
+    .logo span:nth-child(1){color:#4285F4;}
+    .logo span:nth-child(2){color:#EA4335;}
+    .logo span:nth-child(3){color:#FBBC05;}
+    .logo span:nth-child(4){color:#4285F4;}
+    .logo span:nth-child(5){color:#34A853;}
+    .logo span:nth-child(6){color:#EA4335;}
+    .search-box {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 10px 15px;
+      width: 500px;
+      max-width: 90%;
+      margin-top: 30px;
+      box-shadow: 0 1px 6px var(--shadow);
+      background: var(--bg);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .search-box input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 16px;
+      background: transparent;
+      color: var(--text);
+    }
+    .search-box img {
+      width: 20px;
+      cursor: pointer;
+      margin-left: 10px;
+      filter: invert(0);
+      transition: filter 0.3s;
+    }
+    body.dark .search-box img {
+      filter: invert(1);
+    }
+    .buttons {
+      margin-top: 30px;
+    }
+    .buttons button {
+      background: #f8f9fa;
+      border: 1px solid #f8f9fa;
+      border-radius: 4px;
+      color: #3c4043;
+      font-size: 14px;
+      margin: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    body.dark .buttons button {
+      background: #303134;
+      color: #e0e0e0;
+      border: 1px solid #303134;
+    }
+    .buttons button:hover {
+      border: 1px solid #dadce0;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      color: #777;
+    }
+    body.dark footer {
+      color: #999;
+    }
+    #results-page {
+      display: none;
+      padding: 20px 50px;
+    }
+    #tabs {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    #tabs button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--text);
+      transition: color 0.3s;
+    }
+    #tabs button.active {
+      border-bottom: 2px solid #1a73e8;
+      color: #1a73e8;
+    }
+    .result {
+      margin: 20px 0;
+    }
+    .result a {
+      font-size: 18px;
+      color: var(--link);
+      text-decoration: none;
+    }
+    .result a:hover {
+      text-decoration: underline;
+    }
+    #suggestions {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-top: none;
+      position: absolute;
+      width: 480px;
+      max-width: 90%;
+      z-index: 100;
+    }
+    #suggestions div {
+      padding: 10px;
+      cursor: pointer;
+    }
+    #suggestions div:hover {
+      background: var(--hover);
+    }
+    .toggle-mode {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--bg);
+      transition: background 0.3s, color 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toggle-mode" onclick="toggleMode()">🌞 Light</div>
+
+  <!-- Homepage -->
+  <div id="home-page" class="center">
+    <div class="logo">
+      <span>A</span><span>i</span><span>L</span><span>K</span>
+    </div>
+    <div class="search-box">
+      <input id="search-input" type="text" placeholder="Search AiLK or type a URL..." autocomplete="off">
+      <img id="mic-btn" src="https://img.icons8.com/ios-filled/50/000000/microphone.png" title="Search by voice">
+      <img id="search-btn" src="https://img.icons8.com/ios-filled/50/000000/search--v1.png" title="Search">
+    </div>
+    <div id="suggestions"></div>
+    <div class="buttons">
+      <button onclick="doSearch()">AiLK Search</button>
+      <button onclick="feelingLucky()">I’m Feeling Lucky</button>
+    </div>
+  </div>
+
+  <!-- Results Page -->
+  <div id="results-page">
+    <div class="search-box" style="margin:20px auto;">
+      <input id="search-input-top" type="text" placeholder="Search AiLK..." autocomplete="off">
+      <img id="mic-btn-top" src="https://img.icons8.com/ios-filled/50/000000/microphone.png">
+      <img id="search-btn-top" src="https://img.icons8.com/ios-filled/50/000000/search--v1.png">
+    </div>
+    <div id="tabs">
+      <button class="active" onclick="showTab('all')">All</button>
+      <button onclick="showTab('images')">Images</button>
+      <button onclick="showTab('news')">News</button>
+      <button onclick="showTab('videos')">Videos</button>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <footer>
+    Demo only — Janidu Rukshan
+  </footer>
+
+  <script>
+    const homePage = document.getElementById('home-page');
+    const resultsPage = document.getElementById('results-page');
+    const input = document.getElementById('search-input');
+    const inputTop = document.getElementById('search-input-top');
+    const suggestions = document.getElementById('suggestions');
+    const results = document.getElementById('results');
+    const toggle = document.querySelector('.toggle-mode');
+
+    // --- DARK / LIGHT MODE ---
+    function toggleMode() {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      toggle.textContent = isDark ? '🌙 Dark' : '🌞 Light';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+    (function loadTheme() {
+      if(localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        toggle.textContent = '🌙 Dark';
+      }
+    })();
+
+    // --- AUTOCOMPLETE ---
+    async function fetchSuggestions(query) {
+      const res = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${query}`);
+      const data = await res.json();
+      suggestions.innerHTML = '';
+      data[1].forEach(s => {
+        const div = document.createElement('div');
+        div.textContent = s;
+        div.onclick = () => {
+          input.value = s;
+          doSearch();
+        };
+        suggestions.appendChild(div);
+      });
+    }
+    input.addEventListener('input', () => {
+      const q = input.value.trim();
+      if (q) fetchSuggestions(q);
+      else suggestions.innerHTML = '';
+    });
+
+    // --- SEARCH HANDLER ---
+    function doSearch() {
+      const query = input.value.trim() || inputTop.value.trim();
+      if (!query) return;
+      homePage.style.display = 'none';
+      resultsPage.style.display = 'block';
+      inputTop.value = query;
+      showTab('all', query);
+    }
+    function feelingLucky() {
+      window.open('https://www.google.com/search?q=' + input.value, '_blank');
+    }
+
+    // --- TABS ---
+    function showTab(tab, query) {
+      document.querySelectorAll('#tabs button').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`#tabs button[onclick*="${tab}"]`).classList.add('active');
+      results.innerHTML = '';
+      query = query || inputTop.value.trim();
+
+      if (tab === 'all') {
+        results.innerHTML = `
+          <div class="result"><a href="https://www.youtube.com" target="_blank">YouTube</a><br>www.youtube.com</div>
+          <div class="result"><a href="https://www.facebook.com" target="_blank">Facebook</a><br>www.facebook.com</div>
+          <div class="result"><a href="https://www.whatsapp.com" target="_blank">WhatsApp</a><br>www.whatsapp.com</div>
+          <div class="result"><a href="https://www.instagram.com" target="_blank">Instagram</a><br>www.instagram.com</div>
+        `;
+      } else if (tab === 'images') {
+        results.innerHTML = `<h3>Trending Images</h3>
+          <img src="https://source.unsplash.com/300x200/?nature" style="margin:5px;">
+          <img src="https://source.unsplash.com/300x200/?technology" style="margin:5px;">
+          <img src="https://source.unsplash.com/300x200/?ai" style="margin:5px;">
+        `;
+      } else if (tab === 'news') {
+        results.innerHTML = `<h3>Latest News</h3>
+          <div>🌍 AI revolution changing the world in 2025.</div>
+          <div>🚀 Space tech breaking new records this week.</div>
+          <div>💰 Cryptocurrency market sees new highs.</div>
+        `;
+      } else if (tab === 'videos') {
+        results.innerHTML = `<h3>Viral Videos</h3>
+          <iframe width="300" height="200" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0"></iframe>
+          <iframe width="300" height="200" src="https://www.youtube.com/embed/aqz-KE-bpKQ" frameborder="0"></iframe>
+        `;
+      }
+    }
+
+    // --- VOICE SEARCH ---
+    function startVoiceRecognition(targetInput) {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Your browser doesn't support voice search");
+        return;
+      }
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.start();
+      recognition.onresult = (e) => {
+        targetInput.value = e.results[0][0].transcript;
+        doSearch();
+      };
+    }
+    document.getElementById('mic-btn').onclick = () => startVoiceRecognition(input);
+    document.getElementById('mic-btn-top').onclick = () => startVoiceRecognition(inputTop);
+    document.getElementById('search-btn').onclick = doSearch;
+    document.getElementById('search-btn-top').onclick = doSearch;
+  </script>
+
+</body>
+</html>
